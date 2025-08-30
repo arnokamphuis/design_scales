@@ -52,15 +52,7 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
             # So we need (300/25.4) / (scale_ratio/1000) pixels per meter
             target_pixels_per_meter = (dpi / 25.4) * 1000 / scale_ratio
             
-            # Debug print for understanding
-            if scale_ratio == 1000 and paper_size == 'A3':
-                print(f"DEBUG: For 1:{scale_ratio} scale:")
-                print(f"  1mm on paper = {scale_ratio}mm in reality")
-                print(f"  So 1m in reality = {1000/scale_ratio}mm on paper")
-                print(f"  At {dpi} DPI: {dpi/25.4:.4f} pixels per mm")
-                print(f"  So 1m in reality = {(dpi/25.4) * (1000/scale_ratio):.4f} pixels on paper")
-                print(f"  target_pixels_per_meter: {target_pixels_per_meter:.4f}")
-                print()
+
             
             # Calculate the scaling factor needed to achieve target scale
             scale_factor_for_map_scale = target_pixels_per_meter / original_pixels_per_meter
@@ -69,36 +61,28 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
             scaled_w0 = w0 * scale_factor_for_map_scale
             scaled_h0 = h0 * scale_factor_for_map_scale
             
-            # Calculate uniform scaling to fit maximally on paper
-            # This is the additional scaling to fit the scaled image on paper
-            scale_x = w_t / scaled_w0
-            scale_y = h_t / scaled_h0
-            fit_scale = min(scale_x, scale_y)  # Uniform scaling to fit
+            # Check if the image at target scale fits on paper
+            fits_at_target_scale = scaled_w0 <= w_t and scaled_h0 <= h_t
             
-            # Total scaling factor to apply to original image
-            total_scale = scale_factor_for_map_scale * fit_scale
-            
-            # Final dimensions after all scaling
-            final_w = w0 * total_scale
-            final_h = h0 * total_scale
+            if fits_at_target_scale:
+                # Use exact target scale
+                total_scale = scale_factor_for_map_scale
+                final_w = scaled_w0
+                final_h = scaled_h0
+            else:
+                # Scale down to fit on paper (won't achieve target scale)
+                scale_x = w_t / scaled_w0
+                scale_y = h_t / scaled_h0
+                fit_scale = min(scale_x, scale_y)  # Uniform scaling to fit
+                total_scale = scale_factor_for_map_scale * fit_scale
+                final_w = scaled_w0 * fit_scale
+                final_h = scaled_h0 * fit_scale
             
             # Calculate actual scale achieved (might be slightly different due to fitting)
             final_pixels_per_meter = original_pixels_per_meter * total_scale
-            actual_scale_ratio = (dpi / 25.4) / final_pixels_per_meter
+            actual_scale_ratio = 1000 * (dpi / 25.4) / final_pixels_per_meter
             
-            # Debug information for troubleshooting
-            if scale_ratio == 1000 and paper_size == 'A3':  # Debug first case
-                print(f"DEBUG for 1:1000 on A3:")
-                print(f"  original_pixels_per_meter: {original_pixels_per_meter:.4f}")
-                print(f"  target_pixels_per_meter: {target_pixels_per_meter:.4f}")
-                print(f"  scale_factor_for_map_scale: {scale_factor_for_map_scale:.4f}")
-                print(f"  fit_scale: {fit_scale:.4f}")
-                print(f"  total_scale: {total_scale:.4f}")
-                print(f"  final_pixels_per_meter: {final_pixels_per_meter:.4f}")
-                print(f"  dpi / 25.4: {dpi / 25.4:.4f}")
-                print(f"  actual_scale_ratio: {actual_scale_ratio:.4f}")
-                print(f"  target scale ratio was: {scale_ratio}")
-                print()
+
             
             # Calculate coverage percentage
             coverage_x = final_w / w_t * 100
@@ -111,7 +95,8 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
                 'actual_scale': f'1:{int(round(actual_scale_ratio))}' if actual_scale_ratio > 0 else '1:ERROR',
                 'coverage_x_percent': coverage_x,
                 'coverage_y_percent': coverage_y,
-                'fits_on_paper': final_w <= w_t and final_h <= h_t
+                'fits_on_paper': fits_at_target_scale,
+                'achieves_target_scale': fits_at_target_scale
             }
     
     return results
@@ -133,14 +118,14 @@ def print_results(results, w0, h0, p, m, verbose=False):
         else:
             print()
         print("-" * 70)
-        print(f"{'Target Scale':<12} {'Scaling Factor':<15} {'Final Size (px)':<18} {'Actual Scale':<12} {'Coverage %':<12} {'Fits?'}")
-        print("-" * 70)
+        print(f"{'Target Scale':<12} {'Scaling Factor':<15} {'Final Size (px)':<18} {'Actual Scale':<12} {'Coverage %':<12} {'Exact Scale?'}")
+        print("-" * 80)
         
         for scale_name, data in scales.items():
             coverage = f"{data['coverage_x_percent']:.1f}x{data['coverage_y_percent']:.1f}"
-            fits = "✓" if data['fits_on_paper'] else "✗"
+            exact_scale = "✓" if data.get('achieves_target_scale', False) else "✗"
             final_size = f"{data['final_dimensions_px'][0]}x{data['final_dimensions_px'][1]}"
-            print(f"{scale_name:<12} {data['total_scaling_factor']:<15.4f} {final_size:<18} {data['actual_scale']:<12} {coverage:<12} {fits}")
+            print(f"{scale_name:<12} {data['total_scaling_factor']:<15.4f} {final_size:<18} {data['actual_scale']:<12} {coverage:<12} {exact_scale}")
     
     # Show a practical example if we have results
     if results:
