@@ -2,7 +2,7 @@ import math
 import argparse
 import sys
 
-def calculate_scaling_factors(w0, h0, p, m, dpi=300):
+def calculate_scaling_factors(w0, h0, p, m, dpi=300, max_coverage=100):
     """
     Calculate uniform scaling factors for terrain images on A-series paper.
     
@@ -11,6 +11,7 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
     p: Pixels in original image
     m: Meters that p pixels represent
     dpi: Target DPI for printing (default 300)
+    max_coverage: Maximum coverage percentage in any direction (default 100)
     
     Returns:
     Dictionary with results for different paper sizes and scales
@@ -25,7 +26,7 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
     }
     
     # Standard map scales
-    standard_scales = [1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000]
+    standard_scales = [100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000]
     
     # Convert mm to inches, then to pixels at target DPI
     def mm_to_pixels(mm, dpi):
@@ -42,61 +43,61 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300):
         w_t = mm_to_pixels(w_mm, dpi)
         h_t = mm_to_pixels(h_mm, dpi)
         
+        # Calculate effective paper dimensions based on max coverage
+        effective_w_t = w_t * (max_coverage / 100)
+        effective_h_t = h_t * (max_coverage / 100)
+        
+        # Calculate maximum scaling factor to fit on this paper size
+        max_scale_x = effective_w_t / w0
+        max_scale_y = effective_h_t / h0
+        max_scale_factor = min(max_scale_x, max_scale_y)  # uniform scaling
+        
         results[paper_size] = {}
         
         for scale_ratio in standard_scales:
-            # Calculate required pixels per meter for this scale
-            # Scale 1:scale_ratio means 1 unit on map = scale_ratio units in reality
-            # At 300 DPI: 300 pixels per inch = 300/25.4 pixels per mm = 11.811 pixels per mm
-            # For 1:scale_ratio, 1mm on paper = scale_ratio mm in reality
-            # So we need (300/25.4) / (scale_ratio/1000) pixels per meter
-            target_pixels_per_meter = (dpi / 25.4) * 1000 / scale_ratio
+            # Calculate what scaling factor would be needed to achieve this target map scale
+            # For map scale 1:scale_ratio, 1mm on paper should represent scale_ratio mm in reality
+            # At dpi DPI: (dpi/25.4) pixels per mm on paper
+            # We need: (dpi/25.4) pixels per mm on paper = (original_pixels_per_meter * scale_factor) pixels per scale_ratio mm in reality
+            # So: (dpi/25.4) = (original_pixels_per_meter * scale_factor) * (scale_ratio/1000)
+            # Therefore: scale_factor = (dpi/25.4) * 1000 / (original_pixels_per_meter * scale_ratio)
+            required_scale_factor = (dpi / 25.4) * 1000 / (original_pixels_per_meter * scale_ratio)
             
-
-            
-            # Calculate the scaling factor needed to achieve target scale
-            scale_factor_for_map_scale = target_pixels_per_meter / original_pixels_per_meter
-            
-            # Apply this scaling to original image dimensions
-            scaled_w0 = w0 * scale_factor_for_map_scale
-            scaled_h0 = h0 * scale_factor_for_map_scale
-            
-            # Check if the image at target scale fits on paper
-            fits_at_target_scale = scaled_w0 <= w_t and scaled_h0 <= h_t
-            
-            if fits_at_target_scale:
-                # Use exact target scale
-                total_scale = scale_factor_for_map_scale
-                final_w = scaled_w0
-                final_h = scaled_h0
+            # Use the smaller of max possible scaling or required scaling
+            if required_scale_factor <= max_scale_factor:
+                # Target scale is achievable - use exact scaling for target scale
+                final_scale_factor = required_scale_factor
+                achieves_target_scale = True
             else:
-                # Scale down to fit on paper (won't achieve target scale)
-                scale_x = w_t / scaled_w0
-                scale_y = h_t / scaled_h0
-                fit_scale = min(scale_x, scale_y)  # Uniform scaling to fit
-                total_scale = scale_factor_for_map_scale * fit_scale
-                final_w = scaled_w0 * fit_scale
-                final_h = scaled_h0 * fit_scale
+                # Target scale would be too big - use maximum possible scaling
+                final_scale_factor = max_scale_factor
+                achieves_target_scale = False
             
-            # Calculate actual scale achieved (might be slightly different due to fitting)
-            final_pixels_per_meter = original_pixels_per_meter * total_scale
-            actual_scale_ratio = 1000 * (dpi / 25.4) / final_pixels_per_meter
+            # Calculate final dimensions
+            final_w = w0 * final_scale_factor
+            final_h = h0 * final_scale_factor
             
-
+            # Calculate actual map scale achieved
+            # final_scale_factor scales the original pixels_per_meter
+            final_pixels_per_meter = original_pixels_per_meter * final_scale_factor
+            # At dpi DPI, we have (dpi/25.4) pixels per mm on paper
+            # So 1mm on paper contains (dpi/25.4) pixels, representing (dpi/25.4)/final_pixels_per_meter meters
+            # Scale ratio is how many mm in reality per mm on paper
+            actual_scale_ratio = ((dpi / 25.4) / final_pixels_per_meter) * 1000
             
-            # Calculate coverage percentage
+            # Calculate coverage percentage (relative to full paper size)
             coverage_x = final_w / w_t * 100
             coverage_y = final_h / h_t * 100
             
             results[paper_size][f'1:{scale_ratio}'] = {
-                'total_scaling_factor': total_scale,
+                'total_scaling_factor': final_scale_factor,
                 'final_dimensions_px': (int(final_w), int(final_h)),
                 'paper_dimensions_px': (w_t, h_t),
                 'actual_scale': f'1:{int(round(actual_scale_ratio))}' if actual_scale_ratio > 0 else '1:ERROR',
                 'coverage_x_percent': coverage_x,
                 'coverage_y_percent': coverage_y,
-                'fits_on_paper': fits_at_target_scale,
-                'achieves_target_scale': fits_at_target_scale
+                'fits_on_paper': True,  # Always true since we limit to max_scale_factor
+                'achieves_target_scale': achieves_target_scale
             }
     
     return results
@@ -150,6 +151,7 @@ Examples:
   python terrain_scaling.py --width 2500 --height 1800 --pixels 1000 --meters 50
   python terrain_scaling.py -w 3000 --height 2000 -p 500 -m 25 --dpi 600
   python terrain_scaling.py -w 1920 --height 1080 -p 100 -m 10 --paper A2 --scale 2000
+  python terrain_scaling.py -w 2500 --height 1800 -p 1000 -m 50 --max-coverage 80
         """)
     
     parser.add_argument('-w', '--width', type=int, required=True,
@@ -168,6 +170,8 @@ Examples:
                         help='Show results only for specific scale ratio (e.g., 2000 for 1:2000)')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Show detailed information including paper dimensions')
+    parser.add_argument('--max-coverage', type=float, default=100.0,
+                        help='Maximum coverage percentage in any direction (default: 100)')
     
     args = parser.parse_args()
     
@@ -184,19 +188,25 @@ Examples:
         print("Error: DPI must be a positive integer", file=sys.stderr)
         sys.exit(1)
     
+    if args.max_coverage <= 0 or args.max_coverage > 100:
+        print("Error: Maximum coverage must be between 0 and 100 percent", file=sys.stderr)
+        sys.exit(1)
+    
     print("Terrain Image Scaling Calculator")
     print("=" * 40)
     print(f"Input parameters:")
     print(f"  Image size: {args.width} x {args.height} pixels")
     print(f"  Original scale: {args.pixels} pixels = {args.meters} meters ({args.pixels/args.meters:.2f} pixels/meter)")
     print(f"  Target DPI: {args.dpi}")
+    if args.max_coverage < 100:
+        print(f"  Maximum coverage: {args.max_coverage}%")
     
     if args.paper:
         print(f"  Paper filter: {args.paper} only")
     if args.scale:
         print(f"  Scale filter: 1:{args.scale} only")
     
-    results = calculate_scaling_factors(args.width, args.height, args.pixels, args.meters, args.dpi)
+    results = calculate_scaling_factors(args.width, args.height, args.pixels, args.meters, args.dpi, args.max_coverage)
     
     # Filter results if requested
     if args.paper:
