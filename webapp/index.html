@@ -5,15 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terrain Image Scaling Calculator</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header class="header">
             <div class="header-content">
-                <h1><i class="fas fa-map"></i> Terrain Scaling Calculator</h1>
-                <p>Calculate optimal scaling factors for printing terrain images on A-series paper</p>
+                <div class="header-layout">
+                    <div class="logo-section">
+                        <img src="images/ak-golfdesign-large.png" alt="Arno Kamphuis Golf Design" class="header-logo">
+                    </div>
+                    <div class="title-section">
+                        <h1><i class="fas fa-map"></i> Terrain Scaling Calculator</h1>
+                        <p>Calculate optimal scaling factors for printing terrain images on A-series paper</p>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -87,7 +96,7 @@
                         </div>
                     </div>
                     <div class="button-group">
-                        <button type="button" id="calculateBtn" class="btn-primary">
+                        <button type="button" id="calculateBtn" class="btn-primary calculate-btn">
                             <i class="fas fa-calculator"></i> Calculate Scaling Factors
                         </button>
                         <button type="button" id="clearBtn" class="btn-secondary">
@@ -112,7 +121,7 @@
         </main>
 
         <footer class="footer">
-            <p>&copy; 2025 Terrain Scaling Calculator | Built with modern web technologies</p>
+            <p>&copy; 2025 Arno Kamphuis Golf Design | Terrain Scaling Calculator</p>
         </footer>
     </div>
 
