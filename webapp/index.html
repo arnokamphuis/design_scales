@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terrain Image Scaling Calculator</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-map"></i> Terrain Scaling Calculator</h1>
+                <p>Calculate optimal scaling factors for printing terrain images on A-series paper</p>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="form-section">
+                <div class="card">
+                    <h2><i class="fas fa-image"></i> Image Parameters</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="width">Image Width (pixels)</label>
+                            <input type="number" id="width" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="height">Image Height (pixels)</label>
+                            <input type="number" id="height" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pixels">Reference Pixels</label>
+                            <input type="number" id="pixels" min="1" required>
+                            <small>Number of pixels representing the distance</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="meters">Reference Distance (meters)</label>
+                            <input type="number" id="meters" min="0.01" step="0.01" required>
+                            <small>Distance that the pixels represent</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-print"></i> Print Settings</h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="dpi">Print DPI</label>
+                            <input type="number" id="dpi" value="300" min="72" max="1200">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxCoverage">Max Coverage (%)</label>
+                            <input type="number" id="maxCoverage" value="100" min="1" max="100">
+                            <small>Maximum paper area to use</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="paperFilter">Paper Size Filter</label>
+                            <select id="paperFilter">
+                                <option value="">All sizes</option>
+                                <option value="A0">A0 only</option>
+                                <option value="A1">A1 only</option>
+                                <option value="A2">A2 only</option>
+                                <option value="A3">A3 only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="scaleFilter">Scale Filter</label>
+                            <select id="scaleFilter">
+                                <option value="">All scales</option>
+                                <option value="100">1:100</option>
+                                <option value="200">1:200</option>
+                                <option value="250">1:250</option>
+                                <option value="500">1:500</option>
+                                <option value="1000">1:1000</option>
+                                <option value="2000">1:2000</option>
+                                <option value="2500">1:2500</option>
+                                <option value="5000">1:5000</option>
+                                <option value="10000">1:10000</option>
+                                <option value="25000">1:25000</option>
+                                <option value="50000">1:50000</option>
+                                <option value="100000">1:100000</option>
+                                <option value="250000">1:250000</option>
+                                <option value="500000">1:500000</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" id="calculateBtn" class="btn-primary">
+                            <i class="fas fa-calculator"></i> Calculate Scaling Factors
+                        </button>
+                        <button type="button" id="clearBtn" class="btn-secondary">
+                            <i class="fas fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="card" id="resultsCard" style="display: none;">
+                    <h2><i class="fas fa-chart-bar"></i> Scaling Results</h2>
+                    <div id="inputSummary" class="input-summary"></div>
+                    <div id="resultsContainer"></div>
+                </div>
+
+                <div class="card" id="exampleCard" style="display: none;">
+                    <h2><i class="fas fa-lightbulb"></i> Example Usage</h2>
+                    <div id="exampleContent"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Terrain Scaling Calculator | Built with modern web technologies</p>
+        </footer>
+    </div>
+
+    <script src="js/calculator.js"></script>
+</body>
+</html>

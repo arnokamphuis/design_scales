@@ -1,0 +1,29 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+*.md
+README.md
+
+# Python files (not needed for webapp)
+scaling.py
+requirements.txt
+__pycache__
+*.pyc
+*.pyo
+
+# Development files
+.vscode
+.idea
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

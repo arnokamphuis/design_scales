@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  terrain-scaling-calculator:
+    build: .
+    container_name: terrain-scaling-calculator
+    ports:
+      - "4375:80"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.terrain-calc.rule=PathPrefix(`/`)"
+      - "traefik.http.services.terrain-calc.loadbalancer.server.port=80"
+    networks:
+      - terrain-calc-network
+
+networks:
+  terrain-calc-network:
+    driver: bridge
