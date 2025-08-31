@@ -9,7 +9,7 @@ A modern, responsive web application for calculating optimal scaling factors whe
 ### 🎯 **Core Functionality**
 - Calculate scaling factors for terrain images on A0, A1, A2, and A3 paper sizes
 - Automatic orientation optimization (chooses portrait vs. landscape for maximum feasible scale)
-- Support for 14 standard map scales (1:100 to 1:500,000)
+- Support for 15 standard map scales (1:100 to 1:500,000, now including 1:150)
 - Customizable print DPI (72-1200 DPI)
 - Maximum coverage control (1-100%)
 - Real-time calculation and validation

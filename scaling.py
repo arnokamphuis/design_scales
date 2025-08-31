@@ -25,8 +25,8 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300, max_coverage=100):
         'A3': (297, 420)
     }
     
-    # Standard map scales
-    standard_scales = [100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000]
+    # Standard map scales (added 150)
+    standard_scales = [100, 150, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000]
     
     # Convert mm to inches, then to pixels at target DPI
     def mm_to_pixels(mm, dpi):

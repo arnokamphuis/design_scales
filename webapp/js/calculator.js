@@ -7,7 +7,7 @@ class TerrainScalingCalculator {
             'A3': [297, 420]
         };
         
-        this.standardScales = [100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000];
+    this.standardScales = [100, 150, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000];
         
         this.initializeEventListeners();
     }

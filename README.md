@@ -7,7 +7,7 @@ Comprehensive tooling (Python CLI + modern web app) to determine optimal uniform
 ### Algorithm / Core Logic
 * Supports A0, A1, A2, A3 paper sizes (easily extendable)
 * Evaluates both portrait and landscape orientations and automatically selects the one permitting the larger uniform scale factor (while respecting max coverage)
-* 14 standard map scales: 1:100 through 1:500,000
+* 15 standard map scales: 1:100 through 1:500,000 (now including 1:150)
 * Precise conversion using target DPI (default 300; any positive integer)
 * `--max-coverage` lets you restrict usage to a percentage of paper width & height (e.g. leave margins)
 * Reports whether target map scale is exactly achieved or approximated due to physical paper limits
