@@ -41,13 +41,30 @@ class TerrainScalingCalculator {
         for (const [paperSize, [wMm, hMm]] of Object.entries(this.aSeries)) {
             const wT = this.mmToPixels(wMm, dpi);
             const hT = this.mmToPixels(hMm, dpi);
-            
+
             const effectiveWT = wT * (maxCoverage / 100);
             const effectiveHT = hT * (maxCoverage / 100);
-            
-            const maxScaleX = effectiveWT / w0;
-            const maxScaleY = effectiveHT / h0;
-            const maxScaleFactor = Math.min(maxScaleX, maxScaleY);
+
+            // Portrait (as defined) max uniform scale
+            const maxScalePortrait = Math.min(effectiveWT / w0, effectiveHT / h0);
+            // Landscape (swap paper dimensions) max uniform scale
+            const maxScaleLandscape = Math.min(effectiveHT / w0, effectiveWT / h0);
+
+            let orientation, usedWT, usedHT, paperDimsMm;
+            let maxScaleFactor;
+            if (maxScaleLandscape > maxScalePortrait) {
+                orientation = 'landscape';
+                usedWT = hT; // swapped
+                usedHT = wT;
+                maxScaleFactor = maxScaleLandscape;
+                paperDimsMm = [hMm, wMm];
+            } else {
+                orientation = 'portrait';
+                usedWT = wT;
+                usedHT = hT;
+                maxScaleFactor = maxScalePortrait;
+                paperDimsMm = [wMm, hMm];
+            }
             
             results[paperSize] = {};
             
@@ -69,13 +86,15 @@ class TerrainScalingCalculator {
                 const finalPixelsPerMeter = originalPixelsPerMeter * finalScaleFactor;
                 const actualScaleRatio = ((dpi / 25.4) / finalPixelsPerMeter) * 1000;
                 
-                const coverageX = (finalW / wT) * 100;
-                const coverageY = (finalH / hT) * 100;
+                const coverageX = (finalW / usedWT) * 100;
+                const coverageY = (finalH / usedHT) * 100;
                 
                 results[paperSize][`1:${scaleRatio}`] = {
                     totalScalingFactor: finalScaleFactor,
                     finalDimensionsPx: [Math.floor(finalW), Math.floor(finalH)],
-                    paperDimensionsPx: [wT, hT],
+                    paperDimensionsPx: [usedWT, usedHT],
+                    paperOrientation: orientation,
+                    paperDimensionsMm: paperDimsMm,
                     actualScale: `1:${Math.round(actualScaleRatio)}`,
                     coverageXPercent: coverageX,
                     coverageYPercent: coverageY,
@@ -243,11 +262,12 @@ class TerrainScalingCalculator {
         
         // Get paper dimensions for header
         const firstScale = Object.values(scales)[0];
-        const [paperW, paperH] = firstScale.paperSizeMm;
-        const [pixelsW, pixelsH] = firstScale.paperDimensionsPx;
+    const [paperW, paperH] = firstScale.paperDimensionsMm || firstScale.paperSizeMm;
+    const [pixelsW, pixelsH] = firstScale.paperDimensionsPx;
+    const orientation = firstScale.paperOrientation || 'portrait';
         
         section.innerHTML = `
-            <h3>${paperSize} Paper</h3>
+            <h3>${paperSize} Paper (${orientation})</h3>
             <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">
                 ${paperW} × ${paperH} mm = ${pixelsW} × ${pixelsH} pixels at ${dpi} DPI
             </p>

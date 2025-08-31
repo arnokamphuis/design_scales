@@ -46,11 +46,25 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300, max_coverage=100):
         # Calculate effective paper dimensions based on max coverage
         effective_w_t = w_t * (max_coverage / 100)
         effective_h_t = h_t * (max_coverage / 100)
-        
-        # Calculate maximum scaling factor to fit on this paper size
-        max_scale_x = effective_w_t / w0
-        max_scale_y = effective_h_t / h0
-        max_scale_factor = min(max_scale_x, max_scale_y)  # uniform scaling
+        # Consider both portrait (as defined) and landscape (rotated) orientations
+        # Portrait orientation (as defined)
+        max_scale_portrait = min(effective_w_t / w0, effective_h_t / h0)
+        # Landscape orientation (swap paper width/height)
+        max_scale_landscape = min(effective_h_t / w0, effective_w_t / h0)
+
+        if max_scale_landscape > max_scale_portrait:
+            # Use landscape orientation
+            orientation = 'landscape'
+            used_w_t, used_h_t = h_t, w_t  # swapped for calculations/display
+            effective_used_w_t, effective_used_h_t = effective_h_t, effective_w_t
+            max_scale_factor = max_scale_landscape
+            oriented_mm = (h_mm, w_mm)
+        else:
+            orientation = 'portrait'
+            used_w_t, used_h_t = w_t, h_t
+            effective_used_w_t, effective_used_h_t = effective_w_t, effective_h_t
+            max_scale_factor = max_scale_portrait
+            oriented_mm = (w_mm, h_mm)
         
         results[paper_size] = {}
         
@@ -86,13 +100,15 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300, max_coverage=100):
             actual_scale_ratio = ((dpi / 25.4) / final_pixels_per_meter) * 1000
             
             # Calculate coverage percentage (relative to full paper size)
-            coverage_x = final_w / w_t * 100
-            coverage_y = final_h / h_t * 100
+            coverage_x = final_w / used_w_t * 100
+            coverage_y = final_h / used_h_t * 100
             
             results[paper_size][f'1:{scale_ratio}'] = {
                 'total_scaling_factor': final_scale_factor,
                 'final_dimensions_px': (int(final_w), int(final_h)),
-                'paper_dimensions_px': (w_t, h_t),
+                'paper_dimensions_px': (used_w_t, used_h_t),
+                'paper_dimensions_mm': oriented_mm,
+                'paper_orientation': orientation,
                 'actual_scale': f'1:{int(round(actual_scale_ratio))}' if actual_scale_ratio > 0 else '1:ERROR',
                 'coverage_x_percent': coverage_x,
                 'coverage_y_percent': coverage_y,
@@ -111,10 +127,12 @@ def print_results(results, w0, h0, p, m, verbose=False):
         if not scales:
             continue
             
-        paper_px = results[paper_size][list(scales.keys())[0]]['paper_dimensions_px']
-        print(f"\n{paper_size} Paper", end="")
-        if verbose:
-            paper_mm = {'A0': (841, 1189), 'A1': (594, 841), 'A2': (420, 594), 'A3': (297, 420)}[paper_size]
+        first_entry = scales[list(scales.keys())[0]]
+        paper_px = first_entry['paper_dimensions_px']
+        orientation = first_entry.get('paper_orientation', 'portrait')
+        paper_mm = first_entry.get('paper_dimensions_mm')
+        print(f"\n{paper_size} Paper ({orientation})", end="")
+        if verbose and paper_mm:
             print(f" ({paper_mm[0]} x {paper_mm[1]} mm = {paper_px[0]} x {paper_px[1]} pixels at 300 DPI)")
         else:
             print()
@@ -124,7 +142,8 @@ def print_results(results, w0, h0, p, m, verbose=False):
         
         for scale_name, data in scales.items():
             coverage = f"{data['coverage_x_percent']:.1f}x{data['coverage_y_percent']:.1f}"
-            exact_scale = "✓" if data.get('achieves_target_scale', False) else "✗"
+            # Use ASCII to avoid Windows console encoding issues
+            exact_scale = "YES" if data.get('achieves_target_scale', False) else "NO"
             final_size = f"{data['final_dimensions_px'][0]}x{data['final_dimensions_px'][1]}"
             print(f"{scale_name:<12} {data['total_scaling_factor']:<15.4f} {final_size:<18} {data['actual_scale']:<12} {coverage:<12} {exact_scale}")
     
