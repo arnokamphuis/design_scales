@@ -88,7 +88,6 @@ class TerrainScalingCalculator {
                 
                 const coverageX = (finalW / usedWT) * 100;
                 const coverageY = (finalH / usedHT) * 100;
-                const finalPixelsPerMeter = originalPixelsPerMeter * finalScaleFactor;
                 
                 results[paperSize][`1:${scaleRatio}`] = {
                     totalScalingFactor: finalScaleFactor,
