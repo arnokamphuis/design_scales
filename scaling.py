@@ -113,7 +113,9 @@ def calculate_scaling_factors(w0, h0, p, m, dpi=300, max_coverage=100):
                 'coverage_x_percent': coverage_x,
                 'coverage_y_percent': coverage_y,
                 'fits_on_paper': True,  # Always true since we limit to max_scale_factor
-                'achieves_target_scale': achieves_target_scale
+                'achieves_target_scale': achieves_target_scale,
+                'final_pixels_per_meter': final_pixels_per_meter,
+                'final_meters_per_pixel': (1 / final_pixels_per_meter) if final_pixels_per_meter > 0 else None
             }
     
     return results
@@ -137,7 +139,7 @@ def print_results(results, w0, h0, p, m, verbose=False):
         else:
             print()
         print("-" * 70)
-        print(f"{'Target Scale':<12} {'Scaling Factor':<15} {'Final Size (px)':<18} {'Actual Scale':<12} {'Coverage %':<12} {'Exact Scale?'}")
+        print(f"{'Target Scale':<12} {'Scaling Factor':<15} {'Final Size (px)':<18} {'Actual Scale':<12} {'Coverage %':<12} {'Px/m (if exact)':<15} {'Exact?'}")
         print("-" * 80)
         
         for scale_name, data in scales.items():
@@ -151,7 +153,11 @@ def print_results(results, w0, h0, p, m, verbose=False):
             # Use ASCII to avoid Windows console encoding issues
             exact_scale = "YES" if data.get('achieves_target_scale', False) else "NO"
             final_size = f"{data['final_dimensions_px'][0]}x{data['final_dimensions_px'][1]}"
-            print(f"{scale_name:<12} {data['total_scaling_factor']:<15.4f} {final_size:<18} {data['actual_scale']:<12} {coverage:<12} {exact_scale}")
+            px_per_m = ''
+            if data.get('achieves_target_scale'):
+                # Show pixels per meter (rounded) or meters per pixel if preferred
+                px_per_m = f"{data.get('final_pixels_per_meter', 0):.2f}"
+            print(f"{scale_name:<12} {data['total_scaling_factor']:<15.4f} {final_size:<18} {data['actual_scale']:<12} {coverage:<12} {px_per_m:<15} {exact_scale}")
     
     # Show a practical example if we have results
     if results:

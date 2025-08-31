@@ -88,6 +88,7 @@ class TerrainScalingCalculator {
                 
                 const coverageX = (finalW / usedWT) * 100;
                 const coverageY = (finalH / usedHT) * 100;
+                const finalPixelsPerMeter = originalPixelsPerMeter * finalScaleFactor;
                 
                 results[paperSize][`1:${scaleRatio}`] = {
                     totalScalingFactor: finalScaleFactor,
@@ -98,6 +99,7 @@ class TerrainScalingCalculator {
                     actualScale: `1:${Math.round(actualScaleRatio)}`,
                     coverageXPercent: coverageX,
                     coverageYPercent: coverageY,
+                    finalPixelsPerMeter: finalPixelsPerMeter,
                     fitsOnPaper: true,
                     achievesTargetScale: achievesTargetScale,
                     paperSizeMm: [wMm, hMm]
@@ -280,6 +282,7 @@ class TerrainScalingCalculator {
                             <th>Final Size (px)</th>
                             <th>Actual Scale</th>
                             <th>Coverage %</th>
+                            <th>Px/m (if exact)</th>
                             <th>Exact Scale?</th>
                         </tr>
                     </thead>
@@ -306,6 +309,7 @@ class TerrainScalingCalculator {
                 '<span class="scale-approximate">✗</span>';
             const finalSize = `${data.finalDimensionsPx[0]}×${data.finalDimensionsPx[1]}`;
             
+            const pxPerM = data.achievesTargetScale ? data.finalPixelsPerMeter.toFixed(2) : '';
             return `
                 <tr>
                     <td><strong>${scaleName}</strong></td>
@@ -313,6 +317,7 @@ class TerrainScalingCalculator {
                     <td>${finalSize}</td>
                     <td><span class="${data.achievesTargetScale ? 'scale-exact' : 'scale-approximate'}">${data.actualScale}</span></td>
                     <td><span class="coverage-badge">${coverage}</span></td>
+                    <td>${pxPerM}</td>
                     <td>${exactScale}</td>
                 </tr>
             `;
@@ -331,6 +336,7 @@ class TerrainScalingCalculator {
                         <p><span class="example-highlight">Apply scaling factor:</span> ${data.totalScalingFactor.toFixed(4)}</p>
                         <p><span class="example-highlight">Final image size:</span> ${data.finalDimensionsPx[0]} × ${data.finalDimensionsPx[1]} pixels</p>
                         <p><span class="example-highlight">Paper coverage:</span> ${(Math.min(data.coverageXPercent, data.coverageYPercent)).toFixed(1)}% × ${(Math.max(data.coverageXPercent, data.coverageYPercent)).toFixed(1)}%</p>
+                        ${data.achievesTargetScale ? `<p><span class="example-highlight">Pixels per meter:</span> ${data.finalPixelsPerMeter.toFixed(2)} px/m</p>` : ''}
                         <p><span class="example-highlight">Actual scale achieved:</span> ${data.actualScale}</p>
                         ${!data.achievesTargetScale ? 
                             '<p style="color: var(--warning-color); font-weight: 500; margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> Note: Target scale could not be achieved due to paper size constraints.</p>' : 
