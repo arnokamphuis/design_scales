@@ -141,7 +141,13 @@ def print_results(results, w0, h0, p, m, verbose=False):
         print("-" * 80)
         
         for scale_name, data in scales.items():
-            coverage = f"{data['coverage_x_percent']:.1f}x{data['coverage_y_percent']:.1f}"
+            # Normalize coverage display so swapping image width/height yields identical formatting
+            cov_x = data['coverage_x_percent']
+            cov_y = data['coverage_y_percent']
+            if cov_x <= cov_y:
+                coverage = f"{cov_x:.1f}x{cov_y:.1f}"
+            else:
+                coverage = f"{cov_y:.1f}x{cov_x:.1f}"
             # Use ASCII to avoid Windows console encoding issues
             exact_scale = "YES" if data.get('achieves_target_scale', False) else "NO"
             final_size = f"{data['final_dimensions_px'][0]}x{data['final_dimensions_px'][1]}"
@@ -157,7 +163,13 @@ def print_results(results, w0, h0, p, m, verbose=False):
                 print(f"EXAMPLE: To print on {paper_size} paper at {scale_name} scale:")
                 print(f"Apply scaling factor: {data['total_scaling_factor']:.4f}")
                 print(f"Final image size: {data['final_dimensions_px'][0]} x {data['final_dimensions_px'][1]} pixels")
-                print(f"Paper coverage: {data['coverage_x_percent']:.1f}% x {data['coverage_y_percent']:.1f}%")
+                cov_x = data['coverage_x_percent']
+                cov_y = data['coverage_y_percent']
+                if cov_x <= cov_y:
+                    cov_a, cov_b = cov_x, cov_y
+                else:
+                    cov_a, cov_b = cov_y, cov_x
+                print(f"Paper coverage: {cov_a:.1f}% x {cov_b:.1f}%")
                 break
 
 # Example usage

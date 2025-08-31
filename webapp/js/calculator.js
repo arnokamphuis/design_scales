@@ -295,7 +295,12 @@ class TerrainScalingCalculator {
 
     generateTableRows(scales) {
         return Object.entries(scales).map(([scaleName, data]) => {
-            const coverage = `${data.coverageXPercent.toFixed(1)}×${data.coverageYPercent.toFixed(1)}`;
+            // Normalize coverage order (smallest first) for rotation invariance
+            const c1 = data.coverageXPercent;
+            const c2 = data.coverageYPercent;
+            const coverage = c1 <= c2
+                ? `${c1.toFixed(1)}×${c2.toFixed(1)}`
+                : `${c2.toFixed(1)}×${c1.toFixed(1)}`;
             const exactScale = data.achievesTargetScale ? 
                 '<span class="scale-exact">✓</span>' : 
                 '<span class="scale-approximate">✗</span>';
@@ -325,7 +330,7 @@ class TerrainScalingCalculator {
                         <h4><i class="fas fa-print"></i> Example: Printing on ${paperSize} paper at ${scaleName} scale</h4>
                         <p><span class="example-highlight">Apply scaling factor:</span> ${data.totalScalingFactor.toFixed(4)}</p>
                         <p><span class="example-highlight">Final image size:</span> ${data.finalDimensionsPx[0]} × ${data.finalDimensionsPx[1]} pixels</p>
-                        <p><span class="example-highlight">Paper coverage:</span> ${data.coverageXPercent.toFixed(1)}% × ${data.coverageYPercent.toFixed(1)}%</p>
+                        <p><span class="example-highlight">Paper coverage:</span> ${(Math.min(data.coverageXPercent, data.coverageYPercent)).toFixed(1)}% × ${(Math.max(data.coverageXPercent, data.coverageYPercent)).toFixed(1)}%</p>
                         <p><span class="example-highlight">Actual scale achieved:</span> ${data.actualScale}</p>
                         ${!data.achievesTargetScale ? 
                             '<p style="color: var(--warning-color); font-weight: 500; margin-top: 0.5rem;"><i class="fas fa-exclamation-triangle"></i> Note: Target scale could not be achieved due to paper size constraints.</p>' : 
