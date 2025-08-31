@@ -8,6 +8,7 @@ A modern, responsive web application for calculating optimal scaling factors whe
 
 ### 🎯 **Core Functionality**
 - Calculate scaling factors for terrain images on A0, A1, A2, and A3 paper sizes
+- Automatic orientation optimization (chooses portrait vs. landscape for maximum feasible scale)
 - Support for 14 standard map scales (1:100 to 1:500,000)
 - Customizable print DPI (72-1200 DPI)
 - Maximum coverage control (1-100%)
@@ -24,7 +25,8 @@ A modern, responsive web application for calculating optimal scaling factors whe
 - Scaling factors for each paper size and map scale combination
 - Final image dimensions in pixels
 - Actual scale achieved (when target scale isn't possible)
-- Paper coverage percentages
+- Paper coverage percentages (after orientation selection)
+- Orientation shown in each paper section header (e.g. "A3 Paper (landscape)")
 - Clear indication of exact vs. approximate scales
 
 ### ⚡ **User Experience**
@@ -59,7 +61,7 @@ A modern, responsive web application for calculating optimal scaling factors whe
 - **Scaling Factor**: Multiplication factor to apply when printing
 - **Final Size (px)**: Resulting image dimensions after scaling
 - **Actual Scale**: The map scale actually achieved (may differ from target)
-- **Coverage %**: Percentage of paper used (width × height)
+- **Coverage %**: Percentage of the selected orientation's usable paper used (width × height)
 - **Exact Scale?**: Whether the exact target scale was achieved
 
 ### Color Coding
@@ -115,6 +117,7 @@ npx serve .
 ### Scenario: Printing a 2769×3253 pixel terrain image
 - **Reference**: 2498 pixels = 114.21 meters in the real world
 - **Goal**: Print at 1:2000 scale on A3 paper
+- **Orientation Chosen**: Landscape (automatically selected to maximize scaling)
 
 **Result**: Apply scaling factor 0.2700 to achieve exact 1:2000 scale with 21.3% × 17.7% paper coverage.
 
@@ -146,6 +149,7 @@ webapp/
 - [ ] Imperial units support
 - [ ] Batch processing for multiple images
 - [ ] Integration with image editing software
+- [ ] Custom orientation lock (force portrait or landscape override)
 
 ## Support
 
